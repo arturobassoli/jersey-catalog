@@ -22,7 +22,7 @@ export default function JerseyCard({ jersey, href, owner }: JerseyCardProps) {
     <Link href={linkHref} className="block">
       <div className="relative bg-gray-800 rounded-lg overflow-hidden shadow-lg hover:shadow-neon transition-all duration-300 group">
         {/* Image */}
-        <div className="w-full h-48 relative overflow-hidden bg-gray-700 flex items-center justify-center">
+        <div className="w-full h-80 relative overflow-hidden bg-gray-700 flex items-center justify-center">
           <Image
             src={jersey.image_url || fallbackImageUrl}
             alt={`${jersey.team} ${jersey.player} ${jersey.season} jersey`}
