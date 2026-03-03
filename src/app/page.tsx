@@ -1,65 +1,79 @@
-import Image from "next/image";
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { createClient } from '@/lib/supabase/server';
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const ctaHref = user ? '/dashboard' : '/login';
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="bg-[#0a0a0a] text-white">
+      {/* Hero */}
+      <section className="min-h-screen flex items-center justify-center px-4 py-20">
+        <div className="text-center max-w-4xl mx-auto">
+          <h1 className="font-oswald uppercase leading-tight mb-4">
+            <span className="block text-6xl md:text-7xl text-white">YOUR JERSEY COLLECTION.</span>
+            <span className="block text-6xl md:text-7xl text-[#39FF14]">ELEVATED.</span>
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-lg md:text-xl text-gray-400 mb-10 max-w-xl mx-auto">
+            Track, manage, and showcase your football jersey collection. Every shirt, every story.
           </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href={ctaHref}>
+              <Button className="bg-[#39FF14] text-black font-bold text-lg px-8 py-3 hover:bg-[#39FF14]/80 font-oswald uppercase w-full sm:w-auto">
+                {user ? 'Go to Dashboard' : 'Start Your Collection'}
+              </Button>
+            </Link>
+            <Link href="/showcase">
+              <Button
+                variant="outline"
+                className="border-gray-600 text-gray-200 hover:bg-gray-800 hover:text-[#39FF14] text-lg px-8 py-3 font-oswald uppercase w-full sm:w-auto"
+              >
+                View Showcase
+              </Button>
+            </Link>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      {/* Features */}
+      <section className="py-24 px-4 border-t border-[#39FF14]/10">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-bold text-center font-oswald uppercase text-gray-200 mb-12">
+            Everything You Need
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white/5 border border-white/10 backdrop-blur-sm rounded-xl p-6">
+              <div className="text-4xl mb-4">📋</div>
+              <h3 className="text-xl font-bold text-[#39FF14] font-oswald uppercase mb-2">
+                Track Your Collection
+              </h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                Log every jersey with team, player, season, and purchase details. Keep your collection organized and up to date.
+              </p>
+            </div>
+            <div className="bg-white/5 border border-white/10 backdrop-blur-sm rounded-xl p-6">
+              <div className="text-4xl mb-4">📸</div>
+              <h3 className="text-xl font-bold text-[#39FF14] font-oswald uppercase mb-2">
+                Upload Photos
+              </h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                Add high-quality photos of each jersey. Your collection deserves to be seen in its best light.
+              </p>
+            </div>
+            <div className="bg-white/5 border border-white/10 backdrop-blur-sm rounded-xl p-6">
+              <div className="text-4xl mb-4">🌍</div>
+              <h3 className="text-xl font-bold text-[#39FF14] font-oswald uppercase mb-2">
+                Public Showcase
+              </h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                Share your favourite jerseys with the world. Let fellow collectors discover and admire your collection.
+              </p>
+            </div>
+          </div>
         </div>
-      </main>
+      </section>
     </div>
   );
 }
