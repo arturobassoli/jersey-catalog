@@ -13,6 +13,37 @@ import { Switch } from '@/components/ui/switch';
 
 const supabase = createClient();
 
+/** Resize + re-encode an image as JPEG before uploading. */
+function compressImage(file: File, maxPx = 1200, quality = 0.82): Promise<File> {
+  return new Promise((resolve) => {
+    const img = new window.Image();
+    const objectUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      let { width, height } = img;
+      if (width > maxPx || height > maxPx) {
+        if (width >= height) {
+          height = Math.round((height / width) * maxPx);
+          width = maxPx;
+        } else {
+          width = Math.round((width / height) * maxPx);
+          height = maxPx;
+        }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext('2d')!.drawImage(img, 0, 0, width, height);
+      canvas.toBlob(
+        (blob) => resolve(new File([blob!], 'jersey.jpg', { type: 'image/jpeg' })),
+        'image/jpeg',
+        quality,
+      );
+    };
+    img.src = objectUrl;
+  });
+}
+
 export interface JerseyData {
   id: string;
   user_id: string;
@@ -60,15 +91,21 @@ export default function JerseyForm({ mode, initialData }: JerseyFormProps) {
     setUploading(true);
     setError(null);
     try {
+      const compressed = await compressImage(file);
+
+      // Show preview immediately from the local blob (no waiting for upload)
+      const localPreview = URL.createObjectURL(compressed);
+      setImagePreview(localPreview);
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
       const uuid = crypto.randomUUID();
-      const filePath = `${user.id}/${uuid}-${file.name}`;
+      const filePath = `${user.id}/${uuid}.jpg`;
 
       const { error: uploadError } = await supabase.storage
         .from('jersey-images')
-        .upload(filePath, file);
+        .upload(filePath, compressed, { contentType: 'image/jpeg' });
 
       if (uploadError) throw uploadError;
 
@@ -76,6 +113,7 @@ export default function JerseyForm({ mode, initialData }: JerseyFormProps) {
         .from('jersey-images')
         .getPublicUrl(filePath);
 
+      URL.revokeObjectURL(localPreview);
       setImageUrl(publicUrl);
       setImagePreview(publicUrl);
     } catch (err: unknown) {
