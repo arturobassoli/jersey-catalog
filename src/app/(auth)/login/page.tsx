@@ -39,29 +39,6 @@ export default function LoginPage() {
     setLoading(false);
   };
 
-  const handleSignUp = async () => {
-    if (!email || !password) {
-      setMessage({ type: 'error', text: 'Please enter your email and password.' });
-      return;
-    }
-    setLoading(true);
-    setMessage(null);
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${location.origin}/auth/callback`,
-      },
-    });
-    if (error) {
-      setMessage({ type: 'error', text: error.message });
-      console.error('Signup error:', error);
-    } else {
-      setMessage({ type: 'success', text: 'Please check your email to confirm your signup.' });
-    }
-    setLoading(false);
-  };
-
   return (
     <div className="flex items-center justify-center min-h-screen bg-[#0a0a0a] p-4">
       <Card className="w-full max-w-md border border-[#39FF14] shadow-neon">

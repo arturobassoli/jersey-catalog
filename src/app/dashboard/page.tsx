@@ -14,11 +14,18 @@ export default async function DashboardPage() {
     redirect('/login');
   }
 
-  const { data: jerseys, error } = await supabase
-    .from('jerseys')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false });
+  const [{ data: jerseys, error }, { data: profile }] = await Promise.all([
+    supabase
+      .from('jerseys')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('profiles')
+      .select('username')
+      .eq('id', user.id)
+      .maybeSingle(),
+  ]);
 
   if (error) {
     console.error('Error fetching jerseys:', error);
@@ -49,6 +56,22 @@ export default async function DashboardPage() {
             </Button>
           </Link>
         </div>
+
+        {/* No-username banner */}
+        {!profile?.username && (
+          <Link href="/profile" className="block mb-6">
+            <div className="flex items-center gap-3 border border-yellow-500/40 bg-yellow-500/10 rounded-xl px-4 py-3 hover:bg-yellow-500/15 transition-colors">
+              <span className="text-yellow-400 text-xl shrink-0">👤</span>
+              <div className="min-w-0">
+                <p className="text-yellow-400 font-semibold text-sm">Set your username</p>
+                <p className="text-yellow-400/70 text-xs truncate">
+                  Your jerseys appear in the showcase — add a username so others can find your collection.
+                </p>
+              </div>
+              <span className="text-yellow-400 text-xs font-bold shrink-0 ml-auto">Set up →</span>
+            </div>
+          </Link>
+        )}
 
         {/* Stats */}
         <StatsGrid

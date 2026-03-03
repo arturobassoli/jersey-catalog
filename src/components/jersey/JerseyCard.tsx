@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import Image from 'next/image'; // Assuming next/image is used for image optimization
+import Image from 'next/image';
 
 interface JerseyCardProps {
   jersey: {
@@ -11,9 +11,10 @@ interface JerseyCardProps {
     is_public: boolean;
   };
   href?: string;
+  owner?: string;
 }
 
-export default function JerseyCard({ jersey, href }: JerseyCardProps) {
+export default function JerseyCard({ jersey, href, owner }: JerseyCardProps) {
   const fallbackImageUrl = '/jersey-placeholder.svg';
   const linkHref = href ?? `/dashboard/edit/${jersey.id}`;
 
@@ -54,7 +55,9 @@ export default function JerseyCard({ jersey, href }: JerseyCardProps) {
           <p className="text-lg text-gray-200 font-geist-sans truncate">
             {jersey.player}
           </p>
-          {/* Add more details here as needed, e.g., purchase price, value */}
+          {owner && (
+            <p className="text-xs text-gray-500 mt-1 truncate">by @{owner}</p>
+          )}
         </div>
       </div>
     </Link>
