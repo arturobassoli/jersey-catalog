@@ -1,14 +1,17 @@
 import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Image from 'next/image';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { ChevronLeft, ExternalLink } from 'lucide-react';
 
-export default async function ShowcaseDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const supabase = await createClient();
+export default async function ShowcaseDetailPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
+  const { locale, id } = await params;
+  setRequestLocale(locale);
 
-  // Explicitly exclude private_note — never expose it to non-owners
+  const supabase = await createClient();
+  const t = await getTranslations('showcase');
+
   const { data: jersey } = await supabase
     .from('jerseys')
     .select('id, team, player, season, image_url, purchase_location, purchase_date, purchase_price, estimated_value, notes, external_link, is_public')
@@ -27,7 +30,7 @@ export default async function ShowcaseDetailPage({ params }: { params: Promise<{
           className="inline-flex items-center gap-1 text-gray-400 hover:text-[#39FF14] transition-colors text-sm"
         >
           <ChevronLeft className="h-4 w-4" />
-          Back to Showcase
+          {t('backToShowcase')}
         </Link>
       </div>
 
@@ -72,7 +75,7 @@ export default async function ShowcaseDetailPage({ params }: { params: Promise<{
                     <p className="text-[#39FF14] font-oswald text-xl font-bold">
                       €{Number(jersey.purchase_price).toLocaleString('it-IT')}
                     </p>
-                    <p className="text-gray-500 text-xs uppercase mt-0.5">Paid</p>
+                    <p className="text-gray-500 text-xs uppercase mt-0.5">{t('paid')}</p>
                   </div>
                 )}
                 {jersey.estimated_value && (
@@ -80,7 +83,7 @@ export default async function ShowcaseDetailPage({ params }: { params: Promise<{
                     <p className="text-[#39FF14] font-oswald text-xl font-bold">
                       €{Number(jersey.estimated_value).toLocaleString('it-IT')}
                     </p>
-                    <p className="text-gray-500 text-xs uppercase mt-0.5">Est. Value</p>
+                    <p className="text-gray-500 text-xs uppercase mt-0.5">{t('estValue')}</p>
                   </div>
                 )}
               </div>
@@ -91,15 +94,15 @@ export default async function ShowcaseDetailPage({ params }: { params: Promise<{
               <div className="space-y-2 pt-2">
                 {jersey.purchase_location && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Purchased at</span>
+                    <span className="text-gray-500">{t('purchasedAt')}</span>
                     <span className="text-gray-200">{jersey.purchase_location}</span>
                   </div>
                 )}
                 {jersey.purchase_date && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Purchase date</span>
+                    <span className="text-gray-500">{t('purchaseDate')}</span>
                     <span className="text-gray-200">
-                      {new Date(jersey.purchase_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      {new Date(jersey.purchase_date).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </span>
                   </div>
                 )}
@@ -115,7 +118,7 @@ export default async function ShowcaseDetailPage({ params }: { params: Promise<{
                 className="inline-flex items-center gap-2 text-sm text-[#39FF14] hover:underline mt-2"
               >
                 <ExternalLink className="h-4 w-4" />
-                View external link
+                {t('viewExternalLink')}
               </a>
             )}
           </div>
@@ -124,7 +127,7 @@ export default async function ShowcaseDetailPage({ params }: { params: Promise<{
         {/* Notes */}
         {jersey.notes && (
           <div className="border border-white/10 bg-white/5 rounded-xl p-6">
-            <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wide mb-3">Notes</h2>
+            <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wide mb-3">{t('notes')}</h2>
             <p className="text-gray-200 leading-relaxed whitespace-pre-wrap">{jersey.notes}</p>
           </div>
         )}

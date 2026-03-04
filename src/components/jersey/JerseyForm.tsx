@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { useRouter, Link } from '@/i18n/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -67,6 +67,7 @@ interface JerseyFormProps {
 }
 
 export default function JerseyForm({ mode, initialData }: JerseyFormProps) {
+  const t = useTranslations('jerseyForm');
   const router = useRouter();
 
   const [team, setTeam] = useState(initialData?.team ?? '');
@@ -93,12 +94,11 @@ export default function JerseyForm({ mode, initialData }: JerseyFormProps) {
     try {
       const compressed = await compressImage(file);
 
-      // Show preview immediately from the local blob (no waiting for upload)
       const localPreview = URL.createObjectURL(compressed);
       setImagePreview(localPreview);
 
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      if (!user) throw new Error(t('notAuthenticated'));
 
       const uuid = crypto.randomUUID();
       const filePath = `${user.id}/${uuid}.jpg`;
@@ -117,7 +117,7 @@ export default function JerseyForm({ mode, initialData }: JerseyFormProps) {
       setImageUrl(publicUrl);
       setImagePreview(publicUrl);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Image upload failed');
+      setError(err instanceof Error ? err.message : t('uploadFailed'));
     } finally {
       setUploading(false);
     }
@@ -125,7 +125,7 @@ export default function JerseyForm({ mode, initialData }: JerseyFormProps) {
 
   const handleSubmit = async () => {
     if (!team || !player || !season) {
-      setError('Team, player, and season are required.');
+      setError(t('requiredFields'));
       return;
     }
 
@@ -150,7 +150,7 @@ export default function JerseyForm({ mode, initialData }: JerseyFormProps) {
     try {
       if (mode === 'create') {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error('Not authenticated');
+        if (!user) throw new Error(t('notAuthenticated'));
 
         const { error: insertError } = await supabase
           .from('jerseys')
@@ -169,7 +169,7 @@ export default function JerseyForm({ mode, initialData }: JerseyFormProps) {
       router.push('/dashboard');
       router.refresh();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to save jersey');
+      setError(err instanceof Error ? err.message : t('saveFailed'));
       setSubmitting(false);
     }
   };
@@ -184,35 +184,35 @@ export default function JerseyForm({ mode, initialData }: JerseyFormProps) {
 
       {/* Jersey Details */}
       <section>
-        <h2 className="text-lg font-bold text-[#39FF14] font-oswald uppercase mb-4">Jersey Details</h2>
+        <h2 className="text-lg font-bold text-[#39FF14] font-oswald uppercase mb-4">{t('jerseyDetailsTitle')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <Label htmlFor="team" className="text-gray-200">Team</Label>
+            <Label htmlFor="team" className="text-gray-200">{t('team')}</Label>
             <Input
               id="team"
               value={team}
               onChange={(e) => setTeam(e.target.value)}
-              placeholder="e.g. Manchester United"
+              placeholder={t('teamPlaceholder')}
               className="mt-1 bg-gray-800 text-white border-gray-700 focus:border-[#39FF14]"
             />
           </div>
           <div>
-            <Label htmlFor="player" className="text-gray-200">Player</Label>
+            <Label htmlFor="player" className="text-gray-200">{t('player')}</Label>
             <Input
               id="player"
               value={player}
               onChange={(e) => setPlayer(e.target.value)}
-              placeholder="e.g. Ronaldo"
+              placeholder={t('playerPlaceholder')}
               className="mt-1 bg-gray-800 text-white border-gray-700 focus:border-[#39FF14]"
             />
           </div>
           <div>
-            <Label htmlFor="season" className="text-gray-200">Season</Label>
+            <Label htmlFor="season" className="text-gray-200">{t('season')}</Label>
             <Input
               id="season"
               value={season}
               onChange={(e) => setSeason(e.target.value)}
-              placeholder="e.g. 2023-24"
+              placeholder={t('seasonPlaceholder')}
               className="mt-1 bg-gray-800 text-white border-gray-700 focus:border-[#39FF14]"
             />
           </div>
@@ -221,10 +221,10 @@ export default function JerseyForm({ mode, initialData }: JerseyFormProps) {
 
       {/* Media */}
       <section>
-        <h2 className="text-lg font-bold text-[#39FF14] font-oswald uppercase mb-4">Media</h2>
+        <h2 className="text-lg font-bold text-[#39FF14] font-oswald uppercase mb-4">{t('mediaTitle')}</h2>
         <div className="space-y-4">
           <div>
-            <Label htmlFor="image" className="text-gray-200">Jersey Image</Label>
+            <Label htmlFor="image" className="text-gray-200">{t('jerseyImage')}</Label>
             <input
               id="image"
               type="file"
@@ -236,11 +236,11 @@ export default function JerseyForm({ mode, initialData }: JerseyFormProps) {
               }}
               className="mt-1 block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#39FF14] file:text-black hover:file:bg-[#39FF14]/80 cursor-pointer disabled:opacity-50"
             />
-            {uploading && <p className="text-sm text-gray-400 mt-1">Uploading...</p>}
+            {uploading && <p className="text-sm text-gray-400 mt-1">{t('uploading')}</p>}
           </div>
           {imagePreview && (
             <div>
-              <p className="text-sm text-gray-400 mb-2">Preview:</p>
+              <p className="text-sm text-gray-400 mb-2">{t('preview')}</p>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={imagePreview}
@@ -250,7 +250,7 @@ export default function JerseyForm({ mode, initialData }: JerseyFormProps) {
             </div>
           )}
           <div>
-            <Label htmlFor="externalLink" className="text-gray-200">External Link</Label>
+            <Label htmlFor="externalLink" className="text-gray-200">{t('externalLink')}</Label>
             <Input
               id="externalLink"
               type="url"
@@ -265,20 +265,20 @@ export default function JerseyForm({ mode, initialData }: JerseyFormProps) {
 
       {/* Purchase Info */}
       <section>
-        <h2 className="text-lg font-bold text-[#39FF14] font-oswald uppercase mb-4">Purchase Info</h2>
+        <h2 className="text-lg font-bold text-[#39FF14] font-oswald uppercase mb-4">{t('purchaseInfoTitle')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="purchaseLocation" className="text-gray-200">Purchase Location</Label>
+            <Label htmlFor="purchaseLocation" className="text-gray-200">{t('purchaseLocation')}</Label>
             <Input
               id="purchaseLocation"
               value={purchaseLocation}
               onChange={(e) => setPurchaseLocation(e.target.value)}
-              placeholder="e.g. Official Store"
+              placeholder={t('purchaseLocationPlaceholder')}
               className="mt-1 bg-gray-800 text-white border-gray-700 focus:border-[#39FF14]"
             />
           </div>
           <div>
-            <Label htmlFor="purchaseDate" className="text-gray-200">Purchase Date</Label>
+            <Label htmlFor="purchaseDate" className="text-gray-200">{t('purchaseDate')}</Label>
             <Input
               id="purchaseDate"
               type="date"
@@ -288,7 +288,7 @@ export default function JerseyForm({ mode, initialData }: JerseyFormProps) {
             />
           </div>
           <div>
-            <Label htmlFor="purchasePrice" className="text-gray-200">Purchase Price (€)</Label>
+            <Label htmlFor="purchasePrice" className="text-gray-200">{t('purchasePrice')}</Label>
             <Input
               id="purchasePrice"
               type="number"
@@ -301,7 +301,7 @@ export default function JerseyForm({ mode, initialData }: JerseyFormProps) {
             />
           </div>
           <div>
-            <Label htmlFor="estimatedValue" className="text-gray-200">Estimated Value (€)</Label>
+            <Label htmlFor="estimatedValue" className="text-gray-200">{t('estimatedValue')}</Label>
             <Input
               id="estimatedValue"
               type="number"
@@ -318,12 +318,12 @@ export default function JerseyForm({ mode, initialData }: JerseyFormProps) {
 
       {/* Notes */}
       <section>
-        <h2 className="text-lg font-bold text-[#39FF14] font-oswald uppercase mb-4">Notes</h2>
-        <p className="text-xs text-gray-500 mb-2">Visible publicly in the showcase.</p>
+        <h2 className="text-lg font-bold text-[#39FF14] font-oswald uppercase mb-4">{t('notesTitle')}</h2>
+        <p className="text-xs text-gray-500 mb-2">{t('notesPublicHint')}</p>
         <Textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          placeholder="Any additional notes about this jersey..."
+          placeholder={t('notesPlaceholder')}
           rows={4}
           className="bg-gray-800 text-white border-gray-700 focus:border-[#39FF14]"
         />
@@ -332,14 +332,14 @@ export default function JerseyForm({ mode, initialData }: JerseyFormProps) {
       {/* Private Note */}
       <section className="border border-yellow-500/20 bg-yellow-500/5 rounded-xl p-4">
         <div className="flex items-center gap-2 mb-1">
-          <h2 className="text-lg font-bold text-yellow-400 font-oswald uppercase">Private Note</h2>
-          <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded-full">Only visible to you</span>
+          <h2 className="text-lg font-bold text-yellow-400 font-oswald uppercase">{t('privateNoteTitle')}</h2>
+          <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded-full">{t('privateNoteOnly')}</span>
         </div>
-        <p className="text-xs text-gray-500 mb-3">This note is never shown in the public showcase or to other users.</p>
+        <p className="text-xs text-gray-500 mb-3">{t('privateNoteHint')}</p>
         <Textarea
           value={privateNote}
           onChange={(e) => setPrivateNote(e.target.value)}
-          placeholder="Authentication number, condition details, personal memories..."
+          placeholder={t('privateNotePlaceholder')}
           rows={3}
           className="bg-gray-800 text-white border-yellow-500/30 focus:border-yellow-400"
         />
@@ -347,7 +347,7 @@ export default function JerseyForm({ mode, initialData }: JerseyFormProps) {
 
       {/* Visibility */}
       <section>
-        <h2 className="text-lg font-bold text-[#39FF14] font-oswald uppercase mb-4">Visibility</h2>
+        <h2 className="text-lg font-bold text-[#39FF14] font-oswald uppercase mb-4">{t('visibilityTitle')}</h2>
         <div className="flex items-center gap-3">
           <Switch
             id="isPublic"
@@ -355,7 +355,7 @@ export default function JerseyForm({ mode, initialData }: JerseyFormProps) {
             onCheckedChange={setIsPublic}
           />
           <Label htmlFor="isPublic" className="text-gray-200 cursor-pointer">
-            Show in public showcase
+            {t('visibilityLabel')}
           </Label>
         </div>
       </section>
@@ -367,11 +367,11 @@ export default function JerseyForm({ mode, initialData }: JerseyFormProps) {
           disabled={submitting || uploading}
           className="bg-[#39FF14] text-black font-bold hover:bg-[#39FF14]/80 font-oswald uppercase"
         >
-          {submitting ? 'Saving...' : mode === 'create' ? 'Add Jersey' : 'Save Changes'}
+          {submitting ? t('saving') : mode === 'create' ? t('addJersey') : t('saveChanges')}
         </Button>
         <Link href="/dashboard">
           <Button variant="outline" className="w-full sm:w-auto border-gray-600 text-gray-200 hover:bg-gray-700">
-            Cancel
+            {t('cancel')}
           </Button>
         </Link>
       </div>

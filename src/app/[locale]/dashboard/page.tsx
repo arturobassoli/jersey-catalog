@@ -1,17 +1,22 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import Link from 'next/link';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { Link } from '@/i18n/navigation';
 import { Button } from '@/components/ui/button';
 import JerseyCard from '@/components/jersey/JerseyCard';
 import StatsGrid from '@/components/jersey/StatsGrid';
 
-export default async function DashboardPage() {
+export default async function DashboardPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
   const supabase = await createClient();
+  const t = await getTranslations('dashboard');
 
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect('/login');
+    redirect(`/${locale}/login`);
   }
 
   const [{ data: jerseys, error }, { data: profile }] = await Promise.all([
@@ -31,7 +36,7 @@ export default async function DashboardPage() {
     console.error('Error fetching jerseys:', error);
     return (
       <div className="min-h-screen bg-[#0a0a0a] text-red-500 p-4">
-        Error loading jerseys: {error.message}
+        {t('errorLoading')} {error.message}
       </div>
     );
   }
@@ -48,11 +53,11 @@ export default async function DashboardPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <h1 className="text-4xl font-extrabold text-[#39FF14] tracking-wider uppercase font-oswald">
-            My Collection
+            {t('title')}
           </h1>
           <Link href="/dashboard/new">
             <Button className="bg-[#39FF14] text-black font-bold hover:bg-[#39FF14]/80 font-oswald uppercase">
-              + Add New Jersey
+              {t('addNew')}
             </Button>
           </Link>
         </div>
@@ -63,12 +68,12 @@ export default async function DashboardPage() {
             <div className="flex items-center gap-3 border border-yellow-500/40 bg-yellow-500/10 rounded-xl px-4 py-3 hover:bg-yellow-500/15 transition-colors">
               <span className="text-yellow-400 text-xl shrink-0">👤</span>
               <div className="min-w-0">
-                <p className="text-yellow-400 font-semibold text-sm">Set your username</p>
+                <p className="text-yellow-400 font-semibold text-sm">{t('setUsernameTitle')}</p>
                 <p className="text-yellow-400/70 text-xs truncate">
-                  Your jerseys appear in the showcase — add a username so others can find your collection.
+                  {t('setUsernameDesc')}
                 </p>
               </div>
-              <span className="text-yellow-400 text-xs font-bold shrink-0 ml-auto">Set up →</span>
+              <span className="text-yellow-400 text-xs font-bold shrink-0 ml-auto">{t('setUsernameAction')}</span>
             </div>
           </Link>
         )}
@@ -93,14 +98,14 @@ export default async function DashboardPage() {
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <p className="text-5xl mb-4">👕</p>
             <h2 className="text-2xl font-bold text-gray-300 font-oswald uppercase mb-2">
-              No Jerseys Yet
+              {t('noJerseysTitle')}
             </h2>
             <p className="text-gray-500 mb-6">
-              Start building your collection by adding your first jersey.
+              {t('noJerseysDesc')}
             </p>
             <Link href="/dashboard/new">
               <Button className="bg-[#39FF14] text-black font-bold hover:bg-[#39FF14]/80 font-oswald uppercase">
-                Add Your First Jersey
+                {t('addFirst')}
               </Button>
             </Link>
           </div>

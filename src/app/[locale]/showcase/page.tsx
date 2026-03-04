@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import JerseyCard from '@/components/jersey/JerseyCard';
 import ShowcaseFilters from '@/components/showcase/ShowcaseFilters';
 
@@ -11,14 +12,19 @@ type SearchParams = {
 };
 
 export default async function ShowcasePage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ locale: string }>;
   searchParams: Promise<SearchParams>;
 }) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
   const { team, player, season, owner, sort = 'newest' } = await searchParams;
   const supabase = await createClient();
+  const t = await getTranslations('showcase');
 
-  // If filtering by owner username, resolve to user_ids first
   let ownerIds: string[] | null = null;
   if (owner?.trim()) {
     const { data: ownerProfiles } = await supabase
@@ -28,7 +34,6 @@ export default async function ShowcasePage({
     ownerIds = ownerProfiles?.map((p) => p.id) ?? [];
   }
 
-  // Main jersey query — run in parallel with filter-option queries
   let jerseyQuery = supabase
     .from('jerseys')
     .select('id, team, player, season, image_url, is_public, user_id')
@@ -38,11 +43,9 @@ export default async function ShowcasePage({
   if (player?.trim()) jerseyQuery = jerseyQuery.ilike('player', `%${player.trim()}%`);
   if (season?.trim()) jerseyQuery = jerseyQuery.eq('season', season.trim());
 
-  // ownerIds = [] means "no matching users" → we want 0 results
   if (ownerIds !== null) {
     if (ownerIds.length === 0) {
-      // Short-circuit: skip DB round-trip, return empty list
-      return renderPage([], [], [], [], { team: team ?? '', player: player ?? '', season: season ?? '', owner: owner ?? '', sort });
+      return renderPage([], [], [], [], { team: team ?? '', player: player ?? '', season: season ?? '', owner: owner ?? '', sort }, {}, t);
     }
     jerseyQuery = jerseyQuery.in('user_id', ownerIds);
   }
@@ -52,7 +55,6 @@ export default async function ShowcasePage({
   else if (sort === 'player') jerseyQuery = jerseyQuery.order('player', { ascending: true });
   else jerseyQuery = jerseyQuery.order('created_at', { ascending: false });
 
-  // Run jersey fetch + filter-option queries in parallel
   const [{ data: jerseys }, { data: allOptions }, { data: allOwnerRows }] = await Promise.all([
     jerseyQuery,
     supabase.from('jerseys').select('team, season').eq('is_public', true),
@@ -61,7 +63,6 @@ export default async function ShowcasePage({
 
   const jerseyList = jerseys ?? [];
 
-  // Fetch profiles for the displayed jerseys (owner display)
   const displayedUserIds = [...new Set(jerseyList.map((j) => j.user_id))];
   const profileMap: Record<string, string> = {};
 
@@ -73,7 +74,6 @@ export default async function ShowcasePage({
     displayedProfiles?.forEach((p) => { if (p.username) profileMap[p.id] = p.username; });
   }
 
-  // Build filter option lists
   const allTeams = [...new Set(allOptions?.map((j) => j.team).filter(Boolean))].sort() as string[];
   const allSeasons = [...new Set(allOptions?.map((j) => j.season).filter(Boolean))].sort().reverse() as string[];
 
@@ -95,8 +95,10 @@ export default async function ShowcasePage({
     season: season ?? '',
     owner: owner ?? '',
     sort,
-  }, profileMap);
+  }, profileMap, t);
 }
+
+type TFunc = Awaited<ReturnType<typeof getTranslations<'showcase'>>>;
 
 function renderPage(
   jerseyList: { id: string; team: string; player: string; season: string; image_url?: string; is_public: boolean; user_id: string }[],
@@ -105,6 +107,7 @@ function renderPage(
   usernames: string[],
   currentFilters: { team: string; player: string; season: string; owner: string; sort: string },
   profileMap: Record<string, string> = {},
+  t: TFunc,
 ) {
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white p-4 md:p-8">
@@ -132,12 +135,12 @@ function renderPage(
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <p className="text-5xl mb-4">🔍</p>
             <h2 className="text-2xl font-bold text-gray-300 font-oswald uppercase mb-2">
-              No Jerseys Found
+              {t('noJerseysTitle')}
             </h2>
             <p className="text-gray-500 text-sm">
               {Object.values(currentFilters).some(Boolean)
-                ? 'Try adjusting your filters.'
-                : 'No jerseys have been shared publicly yet. Be the first!'}
+                ? t('noJerseysFiltered')
+                : t('noJerseysEmpty')}
             </p>
           </div>
         )}

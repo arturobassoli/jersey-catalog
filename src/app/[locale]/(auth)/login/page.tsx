@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,39 +12,28 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 
 const supabase = createClient();
 
-export default function RegisterPage() {
+export default function LoginPage() {
+  const t = useTranslations('auth');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
   const router = useRouter();
 
-  const handleSignUp = async () => {
+  const handleSignIn = async () => {
     if (!email || !password) {
-      setMessage({ type: 'error', text: 'Please enter your email and password.' });
+      setMessage({ type: 'error', text: t('enterEmailPassword') });
       return;
     }
-    if (password !== confirmPassword) {
-      setMessage({ type: 'error', text: 'Passwords do not match.' });
-      return;
-    }
-
     setLoading(true);
     setMessage(null);
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${location.origin}/auth/callback`,
-      },
-    });
-
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       setMessage({ type: 'error', text: error.message });
-      console.error('Signup error:', error);
+      console.error('Login error:', error);
     } else {
-      setMessage({ type: 'success', text: 'Please check your email to confirm your signup.' });
+      setMessage({ type: 'success', text: t('loginSuccess') });
+      router.push('/dashboard');
     }
     setLoading(false);
   };
@@ -53,15 +43,15 @@ export default function RegisterPage() {
       <Card className="w-full max-w-md border border-[#39FF14] shadow-neon">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-extrabold text-[#39FF14] tracking-wider uppercase font-oswald">
-            Create Account
+            {t('loginTitle')}
           </CardTitle>
           <CardDescription className="text-gray-300 font-geist-sans">
-            Join the Jersey Manager community!
+            {t('loginSubtitle')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label htmlFor="email" className="text-gray-200 font-geist-sans">Email</Label>
+            <Label htmlFor="email" className="text-gray-200 font-geist-sans">{t('email')}</Label>
             <Input
               id="email"
               type="email"
@@ -73,24 +63,12 @@ export default function RegisterPage() {
             />
           </div>
           <div>
-            <Label htmlFor="password" className="text-gray-200 font-geist-sans">Password</Label>
+            <Label htmlFor="password" className="text-gray-200 font-geist-sans">{t('password')}</Label>
             <Input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="mt-1 bg-gray-800 text-white border-gray-700 focus:border-[#39FF14] focus:ring-[#39FF14]"
-              disabled={loading}
-            />
-          </div>
-          <div>
-            <Label htmlFor="confirmPassword" className="text-gray-200 font-geist-sans">Confirm Password</Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="••••••••"
               className="mt-1 bg-gray-800 text-white border-gray-700 focus:border-[#39FF14] focus:ring-[#39FF14]"
               disabled={loading}
@@ -104,19 +82,19 @@ export default function RegisterPage() {
         </CardContent>
         <CardFooter className="flex flex-col gap-2">
           <Button
-            onClick={handleSignUp}
+            onClick={handleSignIn}
             className="w-full bg-[#39FF14] text-black font-bold py-2 hover:bg-opacity-80 transition-colors font-oswald uppercase"
             disabled={loading}
           >
-            {loading ? 'Signing Up...' : 'Sign Up'}
+            {loading ? t('signingIn') : t('signIn')}
           </Button>
           <Button
-            onClick={() => router.push('/login')}
+            onClick={() => router.push('/register')}
             variant="outline"
             className="w-full border-gray-600 text-gray-200 hover:bg-gray-700 hover:text-[#39FF14] transition-colors font-oswald uppercase"
             disabled={loading}
           >
-            Already have an account? Sign In
+            {t('noAccount')}
           </Button>
         </CardFooter>
       </Card>

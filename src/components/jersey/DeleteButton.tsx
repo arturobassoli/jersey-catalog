@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
+import { useTranslations } from 'next-intl';
 
 const supabase = createClient();
 
@@ -12,11 +13,12 @@ interface DeleteButtonProps {
 }
 
 export default function DeleteButton({ jerseyId }: DeleteButtonProps) {
+  const t = useTranslations('deleteButton');
   const router = useRouter();
   const [deleting, setDeleting] = useState(false);
 
   const handleDelete = async () => {
-    if (!window.confirm('Delete this jersey? This cannot be undone.')) return;
+    if (!window.confirm(t('confirm'))) return;
 
     setDeleting(true);
     const { error } = await supabase
@@ -41,7 +43,7 @@ export default function DeleteButton({ jerseyId }: DeleteButtonProps) {
       disabled={deleting}
       className="border-red-400/30 text-red-400 hover:bg-red-400/10 hover:border-red-400"
     >
-      {deleting ? 'Deleting...' : 'Delete Jersey'}
+      {deleting ? t('deleting') : t('delete')}
     </Button>
   );
 }

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { useTranslations } from 'next-intl';
 
 const supabase = createClient();
 
@@ -14,6 +15,7 @@ interface ProfileFormProps {
 }
 
 export default function ProfileForm({ email, currentUsername, userId }: ProfileFormProps) {
+  const t = useTranslations('profile');
   const [username, setUsername] = useState(currentUsername);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
@@ -22,21 +24,17 @@ export default function ProfileForm({ email, currentUsername, userId }: ProfileF
     const trimmed = username.trim();
 
     if (!trimmed) {
-      setMessage({ type: 'error', text: 'Username cannot be empty.' });
+      setMessage({ type: 'error', text: t('usernameEmpty') });
       return;
     }
     if (!/^[a-zA-Z0-9_]{3,20}$/.test(trimmed)) {
-      setMessage({
-        type: 'error',
-        text: 'Username must be 3–20 characters. Letters, numbers, and underscores only.',
-      });
+      setMessage({ type: 'error', text: t('usernameInvalid') });
       return;
     }
 
     setSaving(true);
     setMessage(null);
 
-    // Check uniqueness
     const { data: existing } = await supabase
       .from('profiles')
       .select('id')
@@ -45,7 +43,7 @@ export default function ProfileForm({ email, currentUsername, userId }: ProfileF
       .maybeSingle();
 
     if (existing) {
-      setMessage({ type: 'error', text: 'This username is already taken. Try another one.' });
+      setMessage({ type: 'error', text: t('usernameTaken') });
       setSaving(false);
       return;
     }
@@ -57,7 +55,7 @@ export default function ProfileForm({ email, currentUsername, userId }: ProfileF
     if (error) {
       setMessage({ type: 'error', text: error.message });
     } else {
-      setMessage({ type: 'success', text: 'Username saved!' });
+      setMessage({ type: 'success', text: t('saveSuccess') });
     }
 
     setSaving(false);
@@ -67,14 +65,14 @@ export default function ProfileForm({ email, currentUsername, userId }: ProfileF
     <div className="border border-[#39FF14]/30 bg-gray-900/50 rounded-xl p-6 space-y-6">
       {/* Email (read-only) */}
       <div>
-        <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Email</p>
+        <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">{t('email')}</p>
         <p className="text-gray-300 text-sm">{email}</p>
       </div>
 
       {/* Username */}
       <div>
         <Label htmlFor="username" className="text-gray-200 block mb-2">
-          Username
+          {t('username')}
         </Label>
         <div className="flex items-center bg-gray-800 border border-gray-700 rounded-md px-3 focus-within:border-[#39FF14] transition-colors">
           <span className="text-gray-500 select-none text-sm">@</span>
@@ -89,7 +87,7 @@ export default function ProfileForm({ email, currentUsername, userId }: ProfileF
           />
         </div>
         <p className="text-xs text-gray-600 mt-1.5">
-          3–20 characters. Letters, numbers, and underscores only.
+          {t('usernameHint')}
         </p>
       </div>
 
@@ -104,7 +102,7 @@ export default function ProfileForm({ email, currentUsername, userId }: ProfileF
         disabled={saving}
         className="bg-[#39FF14] text-black font-bold hover:bg-[#39FF14]/80 font-oswald uppercase"
       >
-        {saving ? 'Saving…' : 'Save Username'}
+        {saving ? t('saving') : t('saveUsername')}
       </Button>
     </div>
   );

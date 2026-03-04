@@ -1,15 +1,20 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import Link from 'next/link';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { Link } from '@/i18n/navigation';
 import { ChevronLeft } from 'lucide-react';
 import JerseyForm from '@/components/jersey/JerseyForm';
 
-export default async function NewJerseyPage() {
+export default async function NewJerseyPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  const t = await getTranslations('jerseyForm');
 
   if (!user) {
-    redirect('/login');
+    redirect(`/${locale}/login`);
   }
 
   return (
@@ -20,11 +25,11 @@ export default async function NewJerseyPage() {
           className="inline-flex items-center gap-1 text-gray-400 hover:text-[#39FF14] transition-colors mb-6 text-sm"
         >
           <ChevronLeft className="h-4 w-4" />
-          Back to Dashboard
+          {t('backToDashboard')}
         </Link>
 
         <h1 className="text-4xl font-extrabold text-[#39FF14] tracking-wider uppercase font-oswald mb-8">
-          Add New Jersey
+          {t('addNewTitle')}
         </h1>
 
         <JerseyForm mode="create" />

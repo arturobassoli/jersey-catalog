@@ -1,6 +1,11 @@
+'use client';
+
 import { Shirt } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export default function Footer() {
+  const t = useTranslations('footer');
+
   return (
     <footer className="border-t border-[#39FF14]/20 py-6 px-4">
       <div className="container mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -9,7 +14,7 @@ export default function Footer() {
           JCM
         </div>
         <p className="text-gray-500 text-sm">
-          © 2025 Jersey Collection Manager
+          {t('copyright')}
         </p>
       </div>
     </footer>

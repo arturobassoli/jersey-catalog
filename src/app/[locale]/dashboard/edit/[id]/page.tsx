@@ -1,17 +1,21 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect, notFound } from 'next/navigation';
-import Link from 'next/link';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { Link } from '@/i18n/navigation';
 import { ChevronLeft } from 'lucide-react';
 import JerseyForm from '@/components/jersey/JerseyForm';
 import DeleteButton from '@/components/jersey/DeleteButton';
 
-export default async function EditJerseyPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export default async function EditJerseyPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
+  const { locale, id } = await params;
+  setRequestLocale(locale);
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  const t = await getTranslations('jerseyForm');
 
   if (!user) {
-    redirect('/login');
+    redirect(`/${locale}/login`);
   }
 
   const { data: jersey } = await supabase
@@ -33,11 +37,11 @@ export default async function EditJerseyPage({ params }: { params: Promise<{ id:
           className="inline-flex items-center gap-1 text-gray-400 hover:text-[#39FF14] transition-colors mb-6 text-sm"
         >
           <ChevronLeft className="h-4 w-4" />
-          Back to Dashboard
+          {t('backToDashboard')}
         </Link>
 
         <h1 className="text-4xl font-extrabold text-[#39FF14] tracking-wider uppercase font-oswald mb-8">
-          Edit: {jersey.team} — {jersey.player}
+          {t('editTitle')} {jersey.team} — {jersey.player}
         </h1>
 
         <JerseyForm mode="edit" initialData={jersey} />

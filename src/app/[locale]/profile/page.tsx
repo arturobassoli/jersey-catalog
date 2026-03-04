@@ -1,14 +1,19 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import Link from 'next/link';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { Link } from '@/i18n/navigation';
 import { ChevronLeft } from 'lucide-react';
 import ProfileForm from '@/components/profile/ProfileForm';
 
-export default async function ProfilePage() {
+export default async function ProfilePage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  const t = await getTranslations('profile');
 
-  if (!user) redirect('/login');
+  if (!user) redirect(`/${locale}/login`);
 
   const { data: profile } = await supabase
     .from('profiles')
@@ -24,14 +29,14 @@ export default async function ProfilePage() {
           className="inline-flex items-center gap-1 text-gray-400 hover:text-[#39FF14] transition-colors mb-6 text-sm"
         >
           <ChevronLeft className="h-4 w-4" />
-          Back to Dashboard
+          {t('backToDashboard')}
         </Link>
 
         <h1 className="text-4xl font-extrabold text-[#39FF14] tracking-wider uppercase font-oswald mb-2">
-          Your Profile
+          {t('title')}
         </h1>
         <p className="text-gray-400 mb-8 text-sm">
-          Your username appears on your jerseys in the public showcase so other collectors can find your collection.
+          {t('subtitle')}
         </p>
 
         <ProfileForm

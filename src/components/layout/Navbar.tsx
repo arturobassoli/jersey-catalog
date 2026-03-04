@@ -1,10 +1,10 @@
 'use client';
 
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { Link, useRouter, usePathname } from '@/i18n/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
+import { useTranslations, useLocale } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -13,7 +13,33 @@ import { Menu, LogOut, User, LayoutDashboard, Shirt, Trophy } from 'lucide-react
 
 const supabase = createClient();
 
+function LanguageSwitcher() {
+  const locale = useLocale();
+  const pathname = usePathname();
+
+  return (
+    <div className="flex items-center gap-1 text-sm font-oswald uppercase">
+      <Link
+        href={pathname}
+        locale="en"
+        className={locale === 'en' ? 'text-[#39FF14]' : 'text-gray-400 hover:text-gray-200 transition-colors'}
+      >
+        EN
+      </Link>
+      <span className="text-gray-600">|</span>
+      <Link
+        href={pathname}
+        locale="it"
+        className={locale === 'it' ? 'text-[#39FF14]' : 'text-gray-400 hover:text-gray-200 transition-colors'}
+      >
+        IT
+      </Link>
+    </div>
+  );
+}
+
 export default function Navbar() {
+  const t = useTranslations('nav');
   const router = useRouter();
   const [session, setSession] = useState<Session | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -57,13 +83,14 @@ export default function Navbar() {
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center space-x-6">
           <Link href="/showcase" className="text-gray-300 hover:text-[#39FF14] transition-colors font-geist-sans">
-            Showcase
+            {t('showcase')}
           </Link>
           {session && (
             <Link href="/dashboard" className="text-gray-300 hover:text-[#39FF14] transition-colors font-geist-sans">
-              Dashboard
+              {t('dashboard')}
             </Link>
           )}
+          <LanguageSwitcher />
           {session ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -79,13 +106,13 @@ export default function Navbar() {
                 <DropdownMenuItem asChild>
                   <Link href="/profile" className="cursor-pointer">
                     <User className="mr-2 h-4 w-4" />
-                    Profile
+                    {t('profile')}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-gray-700" />
                 <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-400 focus:text-red-400 focus:bg-red-400/10">
                   <LogOut className="mr-2 h-4 w-4" />
-                  Log out
+                  {t('logout')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -93,12 +120,12 @@ export default function Navbar() {
             <div className="flex items-center space-x-3">
               <Link href="/login">
                 <Button variant="ghost" className="text-gray-300 hover:text-[#39FF14] font-geist-sans">
-                  Login
+                  {t('login')}
                 </Button>
               </Link>
               <Link href="/register">
                 <Button className="bg-[#39FF14] text-black hover:bg-[#39FF14]/80 transition-colors font-oswald uppercase">
-                  Register
+                  {t('register')}
                 </Button>
               </Link>
             </div>
@@ -112,7 +139,7 @@ export default function Navbar() {
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="text-[#39FF14]">
                   <Menu className="h-6 w-6" />
-                  <span className="sr-only">Toggle navigation menu</span>
+                  <span className="sr-only">{t('logoAlt')}</span>
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="bg-[#0a0a0a] border-l border-[#39FF14]/30 text-white w-[260px] p-0 flex flex-col">
@@ -133,7 +160,7 @@ export default function Navbar() {
                     className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-300 hover:text-[#39FF14] hover:bg-[#39FF14]/10 transition-colors"
                   >
                     <Trophy className="h-5 w-5 shrink-0" />
-                    <span className="font-geist-sans">Showcase</span>
+                    <span className="font-geist-sans">{t('showcase')}</span>
                   </Link>
 
                   {session ? (
@@ -144,7 +171,7 @@ export default function Navbar() {
                         className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-300 hover:text-[#39FF14] hover:bg-[#39FF14]/10 transition-colors"
                       >
                         <LayoutDashboard className="h-5 w-5 shrink-0" />
-                        <span className="font-geist-sans">Dashboard</span>
+                        <span className="font-geist-sans">{t('dashboard')}</span>
                       </Link>
                       <Link
                         href="/profile"
@@ -152,7 +179,7 @@ export default function Navbar() {
                         className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-300 hover:text-[#39FF14] hover:bg-[#39FF14]/10 transition-colors"
                       >
                         <User className="h-5 w-5 shrink-0" />
-                        <span className="font-geist-sans">Profile</span>
+                        <span className="font-geist-sans">{t('profile')}</span>
                       </Link>
                     </>
                   ) : (
@@ -162,17 +189,22 @@ export default function Navbar() {
                         onClick={closeMobile}
                         className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-300 hover:text-[#39FF14] hover:bg-[#39FF14]/10 transition-colors"
                       >
-                        <span className="font-geist-sans">Login</span>
+                        <span className="font-geist-sans">{t('login')}</span>
                       </Link>
                       <Link
                         href="/register"
                         onClick={closeMobile}
                         className="flex items-center justify-center px-3 py-2.5 rounded-lg bg-[#39FF14] text-black font-bold hover:bg-[#39FF14]/80 transition-colors font-oswald uppercase mt-1"
                       >
-                        Register
+                        {t('register')}
                       </Link>
                     </>
                   )}
+
+                  {/* Language Switcher in mobile */}
+                  <div className="px-3 py-2.5">
+                    <LanguageSwitcher />
+                  </div>
                 </nav>
 
                 {/* Footer: logout + email */}
@@ -183,7 +215,7 @@ export default function Navbar() {
                       className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-400/10 transition-colors w-full text-left"
                     >
                       <LogOut className="h-5 w-5 shrink-0" />
-                      <span className="font-geist-sans">Logout</span>
+                      <span className="font-geist-sans">{t('logout')}</span>
                     </button>
                     <p className="text-xs text-gray-600 truncate px-3 mt-3">{session.user?.email}</p>
                   </div>

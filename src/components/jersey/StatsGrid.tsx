@@ -1,3 +1,7 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
+
 interface StatsGridProps {
   total: number;
   publicCount: number;
@@ -7,11 +11,13 @@ interface StatsGridProps {
 }
 
 export default function StatsGrid({ total, publicCount, privateCount, totalValue }: StatsGridProps) {
+  const t = useTranslations('stats');
+
   const stats = [
-    { label: 'Total Jerseys', value: total },
-    { label: 'Public', value: publicCount },
-    { label: 'Private', value: privateCount },
-    { label: 'Est. Value', value: `€${totalValue.toLocaleString('it-IT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}` },
+    { label: t('totalJerseys'), value: total },
+    { label: t('public'), value: publicCount },
+    { label: t('private'), value: privateCount },
+    { label: t('estValue'), value: `€${totalValue.toLocaleString('it-IT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}` },
   ];
 
   return (

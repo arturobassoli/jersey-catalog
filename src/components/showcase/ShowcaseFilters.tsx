@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, usePathname } from '@/i18n/navigation';
 import { SlidersHorizontal, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useTranslations } from 'next-intl';
 
 interface FilterState {
   team: string;
@@ -27,16 +28,16 @@ export default function ShowcaseFilters({
   totalCount,
   currentFilters,
 }: ShowcaseFiltersProps) {
+  const t = useTranslations('showcaseFilters');
+  const tShowcase = useTranslations('showcase');
   const router = useRouter();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Local text input state (may lead URL by up to 400ms during typing)
   const [teamInput, setTeamInput] = useState(currentFilters.team);
   const [playerInput, setPlayerInput] = useState(currentFilters.player);
   const [ownerInput, setOwnerInput] = useState(currentFilters.owner);
 
-  // Refs so debounce callbacks always read the latest values without stale closures
   const teamRef = useRef(teamInput);
   const playerRef = useRef(playerInput);
   const ownerRef = useRef(ownerInput);
@@ -50,7 +51,6 @@ export default function ShowcaseFilters({
   const activeCount = [currentFilters.team, currentFilters.player, currentFilters.season, currentFilters.owner]
     .filter(Boolean).length;
 
-  // Build a full URL from ref values + any overrides
   const buildUrl = (overrides: Partial<FilterState>) => {
     const f = filtersRef.current;
     const merged: FilterState = {
@@ -70,7 +70,6 @@ export default function ShowcaseFilters({
     return `${pathname}${qs ? '?' + qs : ''}`;
   };
 
-  // Debounced text filters (400 ms)
   const teamTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => {
     if (teamInput === currentFilters.team) return;
@@ -107,36 +106,34 @@ export default function ShowcaseFilters({
 
   const filtersUI = (
     <div className="space-y-3">
-      {/* Row 1: text searches */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Input
-          placeholder="Search team…"
+          placeholder={t('searchTeam')}
           value={teamInput}
           onChange={(e) => setTeamInput(e.target.value)}
           className="bg-gray-800/80 border-gray-700 text-white placeholder:text-gray-500 focus:border-[#39FF14]"
         />
         <Input
-          placeholder="Search player…"
+          placeholder={t('searchPlayer')}
           value={playerInput}
           onChange={(e) => setPlayerInput(e.target.value)}
           className="bg-gray-800/80 border-gray-700 text-white placeholder:text-gray-500 focus:border-[#39FF14]"
         />
       </div>
-      {/* Row 2: selects + owner text */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <select
           value={currentFilters.season}
           onChange={(e) => router.push(buildUrl({ season: e.target.value }))}
           className={selectClass}
         >
-          <option value="">All seasons</option>
+          <option value="">{t('allSeasons')}</option>
           {seasons.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
 
         <div className="relative">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none">@</span>
           <Input
-            placeholder="username…"
+            placeholder={t('usernamePlaceholder')}
             value={ownerInput}
             onChange={(e) => setOwnerInput(e.target.value)}
             className="bg-gray-800/80 border-gray-700 text-white placeholder:text-gray-500 focus:border-[#39FF14] pl-7"
@@ -148,10 +145,10 @@ export default function ShowcaseFilters({
           onChange={(e) => router.push(buildUrl({ sort: e.target.value }))}
           className={selectClass}
         >
-          <option value="newest">Newest first</option>
-          <option value="oldest">Oldest first</option>
-          <option value="team">Team A–Z</option>
-          <option value="player">Player A–Z</option>
+          <option value="newest">{t('newestFirst')}</option>
+          <option value="oldest">{t('oldestFirst')}</option>
+          <option value="team">{t('teamAZ')}</option>
+          <option value="player">{t('playerAZ')}</option>
         </select>
       </div>
     </div>
@@ -159,15 +156,14 @@ export default function ShowcaseFilters({
 
   return (
     <div className="mb-8">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-5">
         <div>
           <h1 className="text-4xl font-extrabold text-[#39FF14] tracking-wider uppercase font-oswald">
-            Showcase
+            {tShowcase('title')}
           </h1>
           <p className="text-gray-400 mt-1 text-sm">
-            {totalCount} {totalCount === 1 ? 'jersey' : 'jerseys'}
-            {activeCount > 0 ? ' found' : ' from the community'}
+            {totalCount} {totalCount === 1 ? t('jersey') : t('jerseys')}
+            {activeCount > 0 ? ` ${t('found')}` : ` ${t('fromCommunity')}`}
           </p>
         </div>
 
@@ -180,10 +176,9 @@ export default function ShowcaseFilters({
               className="text-gray-400 hover:text-white text-xs gap-1"
             >
               <X className="h-3.5 w-3.5" />
-              Reset
+              {t('reset')}
             </Button>
           )}
-          {/* Mobile toggle */}
           <Button
             variant="outline"
             size="sm"
@@ -191,7 +186,7 @@ export default function ShowcaseFilters({
             className="md:hidden border-gray-700 text-gray-300 hover:border-[#39FF14] hover:text-[#39FF14] gap-2"
           >
             <SlidersHorizontal className="h-4 w-4" />
-            Filters
+            {t('filters')}
             {activeCount > 0 && (
               <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-[#39FF14] text-black text-[10px] font-bold">
                 {activeCount}
@@ -201,10 +196,8 @@ export default function ShowcaseFilters({
         </div>
       </div>
 
-      {/* Desktop: always visible */}
       <div className="hidden md:block">{filtersUI}</div>
 
-      {/* Mobile: collapsible */}
       {mobileOpen && (
         <div className="md:hidden border border-[#39FF14]/20 bg-gray-900/50 rounded-xl p-4 mb-4">
           {filtersUI}

@@ -1,5 +1,8 @@
-import Link from 'next/link';
+'use client';
+
+import { Link } from '@/i18n/navigation';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 
 interface JerseyCardProps {
   jersey: {
@@ -15,6 +18,7 @@ interface JerseyCardProps {
 }
 
 export default function JerseyCard({ jersey, href, owner }: JerseyCardProps) {
+  const t = useTranslations('jerseyCard');
   const fallbackImageUrl = '/jersey-placeholder.svg';
   const linkHref = href ?? `/dashboard/edit/${jersey.id}`;
 
@@ -42,7 +46,7 @@ export default function JerseyCard({ jersey, href, owner }: JerseyCardProps) {
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
               </svg>
-              Private
+              {t('private')}
             </span>
           )}
         </div>
