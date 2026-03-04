@@ -97,6 +97,14 @@ export default function LoginPage() {
           >
             {loading ? 'Signing Up...' : 'Sign Up'}
           </Button> */}
+          <Button
+            onClick={() => router.push('/register')}
+            variant="outline"
+            className="w-full border-gray-600 text-gray-200 hover:bg-gray-700 hover:text-[#39FF14] transition-colors font-oswald uppercase"
+            disabled={loading}
+          >
+            Don't have an account? Sign Up
+          </Button>
         </CardFooter>
       </Card>
     </div>
